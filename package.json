@@ -1,0 +1,47 @@
+{
+  "name": "dgraph-query",
+  "version": "1.0.0",
+  "description": "Creates reusable and mutable query objects for dgraph.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "prebuild": "rimraf dist",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.20",
+    "moment": "^2.27.0"
+  },
+  "peerDependencies": {
+    "dgraph-js": "^20.3.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.1.4",
+    "@types/uuid": "^8.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.23.0",
+    "@typescript-eslint/parser": "^2.23.0",
+    "dgraph-js": "^20.3.0",
+    "jest": "^25.1.0",
+    "prettier": "^1.19.1",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^25.2.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.0.2"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "./test",
+    "testRegex": ".test.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node"
+  }
+}
