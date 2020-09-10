@@ -4,6 +4,7 @@ import union from "lodash/union";
 import difference from "lodash/difference";
 import { RenderedQueryComponent, KeyedList } from "./util";
 import { mergeArgs, QueryArg } from "./QueryArg";
+import { Filter } from "./Filter";
 
 /**
  * Query Node
@@ -74,11 +75,21 @@ export class Node {
   /**
    * Apply or remove filters to the query.
    *
-   * @param {FilterGroup | null} filters
-   *   A filter group if filters are required, null to remove all filters.
+   * @param {FilterGroup | Filter | null} filters
+   *   A filter group if filters are required, null to remove all filters. If
+   *   a filter is passed in, it will be added to a new filter group and set
+   *   to override any existing filters.
    */
-  setFilters(filters: FilterGroup | null) {
-    this.filters = filters;
+  setFilters(filters: FilterGroup | Filter | null) {
+    if ("setOperator" in filters) {
+      this.filters = filters;
+    }
+    else if (filters === null) {
+      this.filters = null;
+    }
+    else {
+      this.filters = new FilterGroup().addFilter(filters);
+    }
     return this;
   }
 

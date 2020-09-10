@@ -12,8 +12,16 @@ export class Filter {
   isNot = false;
   field: string;
 
-  constructor(id?: string) {
+  constructor(id?: string, func?: string, filterArg?: QueryArg | Scalar, value?: any, name?: string) {
     this.id = id || uuid();
+
+    if (!func != !filterArg) {
+      throw new Error('Filter requires either both a func and filterArg or neither.');
+    }
+    if (func) {
+      this.setFunc(func);
+      this.setArg(filterArg, value, name);
+    }
   }
 
   /**

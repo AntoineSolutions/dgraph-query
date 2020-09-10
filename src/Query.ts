@@ -182,14 +182,14 @@ export class Query extends Node {
     return normal;
   }
 
-  async execute(transaction: Txn) {
+  execute = async (transaction: Txn) => {
     const query = this.render();
 
     // Cast values to correct values
     const values = this.normalizeArgs(query.values);
 
     const result = await transaction.queryWithVars(query.string, values);
-    return result.getJson()[this.id];
+    return result.getJson();
   }
 
   toString() {

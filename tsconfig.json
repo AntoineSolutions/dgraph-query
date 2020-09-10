@@ -8,10 +8,14 @@
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "incremental": true,
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "dist", "legacy"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test"
+  ]
 }
