@@ -188,8 +188,7 @@ export class Query extends Node {
     // Cast values to correct values
     const values = this.normalizeArgs(query.values);
 
-    const result = await transaction.queryWithVars(query.string, values);
-    return result.getJson();
+    return transaction.queryWithVars(query.string, values);
   }
 
   toString() {
