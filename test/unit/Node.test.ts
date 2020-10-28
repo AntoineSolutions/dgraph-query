@@ -23,8 +23,8 @@ test("Node should set all values and all values should chain", () => {
   expect(node.removeEdge("bugs"));
   expect(node.edges.has("bugs")).toBe(false);
 
-  expect(node.setFilters("legitimate list of filters" as any)).toStrictEqual(node);
-  expect(node.filters).toBe("legitimate list of filters");
+  expect(node.setFilters(null)).toStrictEqual(node);
+  expect(node.filters).toBe(null);
 
   expect(node.setFilters(null)).toStrictEqual(node);
   expect(node.filters).toBe(null);
@@ -35,7 +35,7 @@ test("Node should render", () => {
     id: "noBugsAllowed",
     render: () => {
       return {
-        string: "(keep out you bugs)",
+        string: "keep out you bugs",
         values: {
           noBugsAllowed: ["insects", "spiders"],
         }
@@ -49,7 +49,7 @@ test("Node should render", () => {
     );
 
   expect(node.render()).toStrictEqual({
-    string: "tastyVeggies {\nbugs @filter(keep out you bugs) {\nuid\n}\n}",
+    string: "tastyVeggies {\nbugs @filter\n(\nkeep out you bugs\n) {\nuid\n}\n}",
     values: {
       noBugsAllowed: ["insects", "spiders"],
     }

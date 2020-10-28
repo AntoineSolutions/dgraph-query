@@ -28,7 +28,7 @@ test("Filter should render.", () => {
     .setArg({type: "string", name: "cool_vegetables", value: "green beans"} as any);
 
   expect(filter.render()).toStrictEqual({
-    string: "\neq(coolVegetables, $cool_vegetables)",
+    string: "eq(coolVegetables, $cool_vegetables)",
     values: {
       "greenBeans" : {
         type: "string",
@@ -47,7 +47,7 @@ test("Filter should negate.", () => {
     .negate();
 
   expect(filter.render()).toStrictEqual({
-    string: "\nNOT eq(coolVegetables, $cool_vegetables)",
+    string: "NOT eq(coolVegetables, $cool_vegetables)",
     values: {
       "greenBeans" : {
         type: "string",

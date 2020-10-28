@@ -5,6 +5,7 @@ import difference from "lodash/difference";
 import { RenderedQueryComponent, KeyedList } from "./util";
 import { mergeArgs, QueryArg } from "./QueryArg";
 import { Filter } from "./Filter";
+import { Sort } from "./Sort";
 
 /**
  * Query Node
@@ -16,11 +17,40 @@ export class Node {
   id: string;
   fields: string[] = [];
   filters: FilterGroup | null = null;
+  sorts: Sort[] = [];
   edges: Map<string, Node> = new Map();
-  // @todo add sorting and other directives.
+  // @todo add directives.
 
   constructor(id?: string) {
     this.id = id || uuid();
+  }
+
+  /**
+   * Add a sort.
+   */
+  addSort(sort: Sort) {
+    this.sorts.push(sort);
+  }
+
+  /**
+   * Remove a sort by id.
+   */
+  removeSort(sortId: string) {
+    this.sorts.filter((sort) => {
+      return sort.id === sortId;
+    });
+  }
+
+  /**
+   * Reverse the sorts on this node.
+   *
+   * As the reverse() method is used on the sorts, sorts used by other nodes
+   * will be unaffected.
+   */
+  reverseSorts() {
+    this.sorts = this.sorts.reverse().map((sort) => {
+      return sort.reverse();
+    });
   }
 
   /**
@@ -36,9 +66,6 @@ export class Node {
 
   /**
    * Removes fields from the query.
-   *
-   * @param {string[]} fields
-   *   The fields to remove. Unincluded fields will be ignored.
    */
   removeFields(fields: string[]) {
     this.fields = difference(this.fields, fields);
@@ -81,16 +108,33 @@ export class Node {
    *   to override any existing filters.
    */
   setFilters(filters: FilterGroup | Filter | null) {
-    if ("setOperator" in filters) {
-      this.filters = filters;
-    }
-    else if (filters === null) {
+    if (filters === null) {
       this.filters = null;
+    }
+    else if ("setOperator" in filters) {
+      this.filters = filters;
     }
     else {
       this.filters = new FilterGroup().addFilter(filters);
     }
     return this;
+  }
+
+  /**
+   * Render the node's sorts.
+   *
+   * @internal
+   */
+  renderSorts() {
+    // Render the sorts and join them on ", ".
+    if (!this.sorts.length) {
+      return "";
+    }
+
+    const sorts = this.sorts.map((sort) => {
+      return sort.render();
+    }).join(", ");
+    return ` (${sorts}) `;
   }
 
   /**
@@ -100,7 +144,7 @@ export class Node {
    *
    * @returns {RenderedQueryComponent}
    */
-  renderInner(): RenderedQueryComponent {
+  renderInner(sorted: boolean = false): RenderedQueryComponent {
     let values: KeyedList<QueryArg> = {};
 
     // Render fields.
@@ -126,8 +170,10 @@ export class Node {
       values = mergeArgs(values, filters.values);
     }
 
+    const sorts = sorted ? this.renderSorts() : "";
+
     return {
-      string: `${this.filters ? `@filter${filters.string} ` : ''}{${fields}${edges}\n}`,
+      string: `${this.filters ? `@filter${filters.string} ` : ''}${sorts}{${fields}${edges}\n}`,
       values
     }
   }
@@ -140,7 +186,7 @@ export class Node {
    * @returns {RenderedQueryComponent}
    */
   render(): RenderedQueryComponent {
-    const output = this.renderInner();
+    const output = this.renderInner(true);
     output.string = `${this.id} ${output.string}`
     return output;
   }

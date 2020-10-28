@@ -81,7 +81,7 @@ export class FilterGroup {
       result.values = mergeArgs(result.values, filterResult.values);
     });
 
-    result.string = `\n${this.isNot ? 'NOT ' : ''}(${resultStrings.join(`\n${this.operator}`)}\n)`;
+    result.string = `\n${this.isNot ? 'NOT ' : ''}(\n${resultStrings.join(`\n${this.operator}\n`)}\n)`;
 
     return result;
   }

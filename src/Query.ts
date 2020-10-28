@@ -93,9 +93,11 @@ export class Query extends Node {
       const condition = query.renderCondition();
       result.values = mergeArgs(result.values, condition.values);
 
+      const sorts = query.sorts.length ? " " + query.renderSorts() : "";
+
       const rendered = query.renderInner();
       result.values = mergeArgs(result.values, rendered.values);
-      result.string += `${asVar ? 'var' : `${query.id}`} ${condition.string}${rendered.string}\n\n`;
+      result.string += `${asVar ? 'var' : `${query.id}`} (${condition.string}${sorts}) ${rendered.string}\n\n`;
     }
 
     return result;
@@ -116,7 +118,7 @@ export class Query extends Node {
       values: {}
     };
     if (this.condition) {
-      condition.string = `(func: ${renderFunc(this.condition.func, this.condition.value, this.condition.field)}) `;
+      condition.string = `func: ${renderFunc(this.condition.func, this.condition.value, this.condition.field)}`;
       if (typeof this.condition.value !== "string") {
         condition.values[this.id] = this.condition.value;
       }
@@ -142,6 +144,11 @@ export class Query extends Node {
     const condition = this.renderCondition();
     result.values = mergeArgs(result.values, condition.values);
 
+    let sorts = this.renderSorts();
+    if (sorts) {
+      sorts = " " + sorts;
+    }
+
     const valueDefs: string[] = Object.keys(result.values).map((key) => {
       const supportedTypes = [
         "int",
@@ -156,7 +163,7 @@ export class Query extends Node {
       return `$${result.values[key].name}: string`
     });
 
-    result.string = `query ${this.id}(${valueDefs.join(", ")}) {\n${blocks.string}${this.id} ${condition.string}${result.string}\n}`
+    result.string = `query ${this.id}(${valueDefs.join(", ")}) {\n${blocks.string}${this.id} (${condition.string}${sorts}) ${result.string}\n}`
 
     return result;
   }
@@ -182,6 +189,11 @@ export class Query extends Node {
     return normal;
   }
 
+  /**
+   * Execute the query.
+   *
+   * @param transaction
+   */
   execute = async (transaction: Txn) => {
     const query = this.render();
 

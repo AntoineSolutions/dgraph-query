@@ -30,3 +30,17 @@ export function renderFunc(func: string, value: QueryArg | string, field?: strin
       return `${func}(${field}, ${valueName})`;
   }
 }
+
+/**
+ * Ensure the predicate name is valid.
+ *
+ * @see https://dgraph.io/docs/master/query-language/schema/#predicate-name-rules
+ *
+ * @param predicate
+ */
+export function predicateIsValid(predicate: string) {
+  const singleMatch = /^[]|[|&|*|(|)|_|\-|+|=|!|#|$|%]$/;
+  const forbidMatch = /[\^|\||{|}|`|\\|~]|\s/;
+
+  return !predicate.match(singleMatch) && !predicate.match(forbidMatch);
+}

@@ -97,7 +97,7 @@ export class Filter {
     }
     result.string = renderFunc(this.func, this.filterArg, this.field)
 
-    result.string = `\n${this.isNot ? 'NOT ' : ''}${result.string}`;
+    result.string = `${this.isNot ? 'NOT ' : ''}${result.string}`;
     return result;
   }
 }
