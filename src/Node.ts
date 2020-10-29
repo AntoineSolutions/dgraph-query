@@ -30,6 +30,7 @@ export class Node {
    */
   addSort(sort: Sort) {
     this.sorts.push(sort);
+    return this;
   }
 
   /**
@@ -39,6 +40,7 @@ export class Node {
     this.sorts.filter((sort) => {
       return sort.id === sortId;
     });
+    return this;
   }
 
   /**
@@ -51,6 +53,7 @@ export class Node {
     this.sorts = this.sorts.reverse().map((sort) => {
       return sort.reverse();
     });
+    return this;
   }
 
   /**
