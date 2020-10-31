@@ -2,7 +2,7 @@ import { QueryArg } from "./QueryArg";
 
 export type RenderedQueryComponent = {
   string: string
-  values: KeyedList<QueryArg>
+  values: QueryArg[]
 }
 
 export type KeyedList<T> = {[key: string]: T}
@@ -43,4 +43,41 @@ export function predicateIsValid(predicate: string) {
   const forbidMatch = /[\^|\||{|}|`|\\|~]|\s/;
 
   return !predicate.match(singleMatch) && !predicate.match(forbidMatch);
+}
+
+/**
+ * Merges two lists of QueryArgs together.
+ *
+ * @param {KeyedList<QueryArg>} values1
+ * @param {KeyedList<QueryArg>} values2
+ *
+ * @returns {KeyedList<QueryArg>}
+ *
+ * @throws
+ *   Throws an error if there is a conflict in either the name or the content
+ *   of a query arg. If both the name and content are identical, it merges
+ *   without error.
+ */
+export function mergeArgs(values1: QueryArg[], values2: QueryArg[]): QueryArg[] {
+  const result = [...values1];
+
+  // If the first list of values is empty, return the second list of values.
+  if (!result.length) {
+    return [...values2];
+  }
+
+  for (const value2 of values2) {
+    for (const value1 of values1) {
+      if (value1.name === value2.name && value1 !== value2) {
+        // Can't have multiple args with the same name.
+        throw new Error(`Arg ${value2.name} conflicts with arg ${value1.name}`);
+      }
+      if (!result.includes(value2)) {
+        // If the arg isn't already included, include it.
+        result.push(value2);
+      }
+    }
+  }
+
+  return result;
 }

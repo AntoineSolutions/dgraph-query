@@ -24,9 +24,7 @@ test("Query should render", () => {
 
   expect(query.render()).toStrictEqual({
     string: `query greenBeans($color: string) {\ngreenBeans (func: eq(color, $color)) {\nuid\n}\n}`,
-    values: {
-      greenBeans: condition.value
-    }
+    values: [condition.value]
   });
 });
 
@@ -34,45 +32,43 @@ test("Values should be normalized", () => {
   const query = new Query("greenBeans");
   // Normalize a string.
   expect(
-    query.normalizeArgs({
-      pickles: new QueryArg("string", "vinegar", "ingredients")
-    })
+    query.normalizeArgs([new QueryArg("string", "vinegar", "ingredients")])
   ).toStrictEqual({
     $ingredients: "vinegar"
   });
 
   // Normalize an int.
   expect(
-    query.normalizeArgs({ xLargeFries: new QueryArg("int", 4000, "kcal") })
+    query.normalizeArgs([new QueryArg("int", 4000, "kcal")])
   ).toStrictEqual({
     $kcal: 4000
   });
 
   // Normalize a float.
   expect(
-    query.normalizeArgs({
-      xxLargeFries: new QueryArg("int", 1.4, "teraCalories")
-    })
+    query.normalizeArgs(
+      [new QueryArg("int", 1.4, "teraCalories")]
+    )
   ).toStrictEqual({
     $teraCalories: 1.4
   });
 
   // Normalize a date.
   expect(
-    query.normalizeArgs({
-      coolIfItWorks: new QueryArg(
+    query.normalizeArgs(
+      [new QueryArg(
         "dateTime",
         moment("1993-04-28T00:00:00+00:00"),
         "yourBirthday"
-      )
-    })
+      )]
+    )
   ).toStrictEqual({
     $yourBirthday: "1993-04-28T00:00:00.000+00:00"
   });
 
   // Normalize a bool.
   expect(
-    query.normalizeArgs({ onlyAllowed: new QueryArg("bool", true, "allowed") })
+    query.normalizeArgs([new QueryArg("bool", true, "allowed")])
   ).toStrictEqual({
     $allowed: true
   });
@@ -134,10 +130,10 @@ test("Query Blocks should render", () => {
     }
     }"
   `);
-  expect(actual.values).toStrictEqual({
-    testVarQuery: varQuery.condition.value,
-    ranking: piggybackQuery.condition.value,
-  });
+  expect(actual.values).toStrictEqual([
+    varQuery.condition.value,
+    piggybackQuery.condition.value,
+  ]);
 });
 
 test("Test execute", () => {

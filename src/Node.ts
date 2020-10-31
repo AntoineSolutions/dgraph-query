@@ -2,10 +2,11 @@ import { v4 as uuid } from "uuid";
 import { FilterGroup } from "./FilterGroup";
 import union from "lodash/union";
 import difference from "lodash/difference";
-import { RenderedQueryComponent, KeyedList } from "./util";
-import { mergeArgs, QueryArg } from "./QueryArg";
+import { RenderedQueryComponent, KeyedList, mergeArgs } from "./util";
+import { QueryArg } from "./QueryArg";
 import { Filter } from "./Filter";
 import { Sort } from "./Sort";
+import { Pager } from "./Pager";
 
 /**
  * Query Node
@@ -18,6 +19,7 @@ export class Node {
   fields: string[] = [];
   filters: FilterGroup | null = null;
   sorts: Sort[] = [];
+  pager: Pager | null = null;
   edges: Map<string, Node> = new Map();
   // @todo add directives.
 
@@ -123,21 +125,30 @@ export class Node {
     return this;
   }
 
+  setPager(pager: Pager) {
+    this.pager = pager;
+    return this;
+  }
+
+  removePager() {
+    this.pager = null;
+    return this;
+  }
+
   /**
    * Render the node's sorts.
    *
    * @internal
    */
-  renderSorts() {
+  renderSorts(): string {
     // Render the sorts and join them on ", ".
     if (!this.sorts.length) {
       return "";
     }
 
-    const sorts = this.sorts.map((sort) => {
+    return this.sorts.map((sort) => {
       return sort.render();
     }).join(", ");
-    return ` (${sorts}) `;
   }
 
   /**
@@ -147,8 +158,8 @@ export class Node {
    *
    * @returns {RenderedQueryComponent}
    */
-  renderInner(sorted: boolean = false): RenderedQueryComponent {
-    let values: KeyedList<QueryArg> = {};
+  renderInner(asBlock: boolean = false): RenderedQueryComponent {
+    let values: QueryArg[] = [];
 
     // Render fields.
     // @todo Allow fields to be aliased.
@@ -164,19 +175,28 @@ export class Node {
     const edges = edgeList.length ? `\n${edgeList.join("\n")}` : '';
 
     // Render.
-    let filters: RenderedQueryComponent = {
-      string: '',
-      values: {}
-    };
+    let filters: RenderedQueryComponent | null = null;
+    let pager: RenderedQueryComponent | null = null;
+
     if (this.filters) {
       filters = this.filters.render();
       values = mergeArgs(values, filters.values);
     }
+    if (asBlock && this.pager) {
+      pager = this.pager.render();
+      values = mergeArgs(values, pager.values);
+    }
 
-    const sorts = sorted ? this.renderSorts() : "";
+    const sorts = asBlock ? this.renderSorts() : "";
+
+    let resultString = "";
+    resultString = sorts ? `${resultString}, ${sorts}` : resultString;
+    resultString = pager ? `${resultString}, ${pager}` : resultString;
+    resultString = filters ? ` @filter${filters.string}${resultString ? `, ${resultString}` : ""}` : "";
+    resultString = `${resultString} {${fields}${edges}\n}`;
 
     return {
-      string: `${this.filters ? `@filter${filters.string} ` : ''}${sorts}{${fields}${edges}\n}`,
+      string: resultString,
       values
     }
   }
@@ -190,7 +210,7 @@ export class Node {
    */
   render(): RenderedQueryComponent {
     const output = this.renderInner(true);
-    output.string = `${this.id} ${output.string}`
+    output.string = `${this.id}${output.string}`
     return output;
   }
 }

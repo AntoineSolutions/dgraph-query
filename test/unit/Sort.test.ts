@@ -39,9 +39,9 @@ test("A sort should be created through its methods and the methods should chain.
 test("A sort should render.", () => {
   const sort = new Sort();
   sort.setField("deliciousness");
-  expect(sort.render()).toBe("orderasc <deliciousness>");
+  expect(sort.render()).toBe("orderasc: <deliciousness>");
   sort.setVal("crunchiness");
-  expect(sort.render()).toBe("orderasc val(crunchiness)");
+  expect(sort.render()).toBe("orderasc: val(crunchiness)");
   sort.setDirection("desc");
-  expect(sort.render()).toBe("orderdesc val(crunchiness)");
+  expect(sort.render()).toBe("orderdesc: val(crunchiness)");
 });

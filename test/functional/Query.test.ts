@@ -18,9 +18,9 @@ test("Query should render.", () => {
 
   expect(query.render()).toStrictEqual({
     string: "query tastyHamburgers($isCooked: bool, $foodType: string) {\ntastyHamburgers (func: type($foodType)) @filter\n(\neq(cooked, $isCooked)\n) {\nuid\nowner {\nname\n}\n}\n}",
-    values: {
-      cookedFilter: new QueryArg("bool", true, "isCooked"),
-      tastyHamburgers: new QueryArg("string", "Hamburger", "foodType"),
-    }
+    values: [
+      new QueryArg("bool", true, "isCooked"),
+      new QueryArg("string", "Hamburger", "foodType"),
+    ]
   });
 });

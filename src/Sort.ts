@@ -39,6 +39,6 @@ export class Sort {
   render() {
     const formatStart = this.format === "var" ? "val(" : "<";
     const formatEnd = this.format === "var" ? ")" : ">"
-    return `order${this.direction} ${formatStart}${this.field}${formatEnd}`;
+    return `order${this.direction}: ${formatStart}${this.field}${formatEnd}`;
   }
 }

@@ -1,7 +1,6 @@
 import { v4 as uuid } from "uuid";
 import { Filter } from "./Filter";
-import { RenderedQueryComponent } from "./util";
-import { mergeArgs } from "./QueryArg";
+import { RenderedQueryComponent, mergeArgs } from "./util";
 
 /**
  * Groups filters and filter groups.
@@ -72,7 +71,7 @@ export class FilterGroup {
     const resultStrings: string[] = [];
     const result: RenderedQueryComponent = {
       string: '',
-      values: {}
+      values: []
     };
 
     this.filters.forEach((filter) => {

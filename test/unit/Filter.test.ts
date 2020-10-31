@@ -29,13 +29,12 @@ test("Filter should render.", () => {
 
   expect(filter.render()).toStrictEqual({
     string: "eq(coolVegetables, $cool_vegetables)",
-    values: {
-      "greenBeans" : {
+    values: [{
         type: "string",
         name: "cool_vegetables",
         value: "green beans",
       },
-    }
+    ],
   });
 });
 
@@ -48,12 +47,12 @@ test("Filter should negate.", () => {
 
   expect(filter.render()).toStrictEqual({
     string: "NOT eq(coolVegetables, $cool_vegetables)",
-    values: {
-      "greenBeans" : {
+    values: [
+      {
         type: "string",
         name: "cool_vegetables",
         value: "green beans",
       },
-    }
+    ],
   })
 });

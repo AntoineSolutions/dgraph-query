@@ -36,9 +36,7 @@ test("Node should render", () => {
     render: () => {
       return {
         string: "keep out you bugs",
-        values: {
-          noBugsAllowed: ["insects", "spiders"],
-        }
+        values: ["insects", "spiders"]
       }
     }
   }
@@ -50,8 +48,6 @@ test("Node should render", () => {
 
   expect(node.render()).toStrictEqual({
     string: "tastyVeggies {\nbugs @filter\n(\nkeep out you bugs\n) {\nuid\n}\n}",
-    values: {
-      noBugsAllowed: ["insects", "spiders"],
-    }
+    values: ["insects", "spiders"],
   });
 });

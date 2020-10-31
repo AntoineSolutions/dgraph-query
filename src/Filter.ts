@@ -90,10 +90,10 @@ export class Filter {
   render(): RenderedQueryComponent {
     const result: RenderedQueryComponent = {
       string: '',
-      values: {},
+      values: [],
     };
     if (typeof this.filterArg !== "string") {
-      result.values[this.id] = this.filterArg;
+      result.values.push(this.filterArg);
     }
     result.string = renderFunc(this.func, this.filterArg, this.field)
 

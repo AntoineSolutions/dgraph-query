@@ -1,7 +1,7 @@
 import { Node } from "./Node";
 import { Txn } from "dgraph-js";
-import { mergeArgs, QueryArg } from "./QueryArg";
-import { RenderedQueryComponent, renderFunc, KeyedList } from "./util";
+import { QueryArg } from "./QueryArg";
+import { RenderedQueryComponent, renderFunc, KeyedList, mergeArgs } from "./util";
 
 export type Condition = {
   field?: string;
@@ -61,7 +61,7 @@ export class Query extends Node {
   renderQueryBlocks(): RenderedQueryComponent {
     const result: RenderedQueryComponent = {
       string: '',
-      values: {},
+      values: [],
     };
 
     for ( const { query, asVar, vars } of this.queryBlocks ) {
@@ -95,9 +95,9 @@ export class Query extends Node {
 
       const sorts = query.sorts.length ? " " + query.renderSorts() : "";
 
-      const rendered = query.renderInner();
+      const rendered = query.renderInner(true);
       result.values = mergeArgs(result.values, rendered.values);
-      result.string += `${asVar ? 'var' : `${query.id}`} (${condition.string}${sorts}) ${rendered.string}\n\n`;
+      result.string += `${asVar ? 'var' : `${query.id}`} (${condition.string}${sorts})${rendered.string}\n\n`;
     }
 
     return result;
@@ -115,12 +115,12 @@ export class Query extends Node {
   renderCondition() {
     const condition: RenderedQueryComponent = {
       string: "",
-      values: {}
+      values: []
     };
     if (this.condition) {
       condition.string = `func: ${renderFunc(this.condition.func, this.condition.value, this.condition.field)}`;
       if (typeof this.condition.value !== "string") {
-        condition.values[this.id] = this.condition.value;
+        condition.values.push(this.condition.value);
       }
     }
 
@@ -136,7 +136,7 @@ export class Query extends Node {
    *   The final rendered query.
    */
   render(): RenderedQueryComponent {
-    const result = super.renderInner();
+    const result = super.renderInner(false);
 
     const blocks = this.renderQueryBlocks();
     result.values = mergeArgs(result.values, blocks.values);
@@ -144,26 +144,41 @@ export class Query extends Node {
     const condition = this.renderCondition();
     result.values = mergeArgs(result.values, condition.values);
 
-    let sorts = this.renderSorts();
-    if (sorts) {
-      sorts = " " + sorts;
+    const pager: RenderedQueryComponent | null = this.pager ? this.pager.render() : null;
+    if (pager) {
+      result.values = mergeArgs(result.values, pager.values);
     }
 
-    const valueDefs: string[] = Object.keys(result.values).map((key) => {
+    const valueDefs: string[] = result.values.map((item) => {
       const supportedTypes = [
         "int",
         "float",
         "string",
         "bool"
       ];
+
       // If type is supported pass that for the type. Otherwise pass 'string'.
-      if (supportedTypes.includes(result.values[key].type)) {
-        return `$${result.values[key].name}: ${result.values[key].type}`
+      if (supportedTypes.includes(item.type)) {
+        return `$${item.name}: ${item.type}`
       }
-      return `$${result.values[key].name}: string`
+      return `$${item.name}: string`
     });
 
-    result.string = `query ${this.id}(${valueDefs.join(", ")}) {\n${blocks.string}${this.id} (${condition.string}${sorts}) ${result.string}\n}`
+    let resultString = `query ${this.id}`;
+
+    // Add variables.
+    resultString += `(${valueDefs.join(", ")})`;
+
+    resultString += " {\n";
+    resultString += blocks.string;
+
+    // Add the main query block.
+    resultString += `${this.id} (${condition.string}`;
+    resultString += this.sorts.length ? `, ${this.renderSorts()}` : "";
+
+    resultString += ")";
+    resultString += pager ? `, ${pager.string}` : "";
+    result.string = `${resultString}${result.string}\n}`
 
     return result;
   }
@@ -175,14 +190,14 @@ export class Query extends Node {
    *
    * @param {KeyedList<QueryArg>} queryArgs
    */
-  normalizeArgs(queryArgs: KeyedList<QueryArg>) {
+  normalizeArgs(queryArgs: QueryArg[]) {
     const normal: KeyedList<string | number | boolean> = {}
-    Object.keys(queryArgs).forEach((key) => {
-      if (queryArgs[key].type === "dateTime") {
-        normal[`$${queryArgs[key].name}`] = queryArgs[key].value.toISOString(true);
+    queryArgs.forEach((arg) => {
+      if (arg.type === "dateTime") {
+        normal[`$${arg.name}`] = arg.value.toISOString(true);
       }
       else {
-        normal[`$${queryArgs[key].name}`] = queryArgs[key].value;
+        normal[`$${arg.name}`] = arg.value;
       }
     });
 

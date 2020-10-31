@@ -1,5 +1,6 @@
-import { mergeArgs, QueryArg } from "../../src/QueryArg";
+import { QueryArg } from "../../src/QueryArg";
 import moment, { isMoment } from "moment";
+import { mergeArgs } from "../../src/util";
 
 test("QueryArgs should construct.", () => {
   const queryArg = new QueryArg("default", "camembert", "cheese");
@@ -32,35 +33,24 @@ test("QueryArgs should compare", () => {
 });
 
 test("Lists of QueryArgs should be merged", () => {
-  const queryArgList1: any = {
-    "isHoopy": new QueryArg("string", "hoopy", "isHoopy"),
-    "isFrood": new QueryArg("string", "frood", "isFrood"),
-  };
-  const queryArgList2: any = {
-    "isPresident": new QueryArg("string", "president of the galaxy", "isPresident"),
-  };
+  const hoopy = new QueryArg("string", "hoopy", "isHoopy");
+  const frood = new QueryArg("string", "frood", "isFrood");
+  const prez = new QueryArg("string", "president of the galaxy", "isPresident");
+
+  const queryArgList1: QueryArg[] = [hoopy, frood];
+  const queryArgList2: any = [prez];
 
   // If no args or keys conflict the lists should merge.
-  const expected = Object.assign({}, queryArgList1, queryArgList2);
+  const expected = [hoopy, frood, prez];
   expect(mergeArgs(queryArgList1, queryArgList2)).toStrictEqual(expected);
 
   // If an arg and its key match, the lists should merge.
-  queryArgList2.isFrood = new QueryArg("string", "frood", "isFrood");
+  queryArgList2.push(queryArgList1[1]);
   expect(mergeArgs(queryArgList1, queryArgList2)).toStrictEqual(expected);
 
-  // If there is a conflict between the query args between the lists, an error
-  // should be thrown.
-  queryArgList2.isFrood = new QueryArg("string", "Ford Prefect", "name");
-  expect(() => {mergeArgs(queryArgList1, queryArgList2)}).toThrow();
-
-  // If two args have the same name, but different values, an error should be
+  // If two args have the same name, are different objects, an error should be
   // thrown.
-  delete queryArgList2.isFrood;
-  queryArgList2.isFord = new QueryArg("string", "Ford Prefect", "isFrood");
-  expect(() => {mergeArgs(queryArgList1, queryArgList2)}).toThrow();
-
-  // If two args have different keys, but otherwise match, an error should be
-  // thrown.
-  queryArgList2.isFord = new QueryArg("string", "frood", "isFrood");
+  delete queryArgList2[1];
+  queryArgList2.push(new QueryArg("string", "Ford Prefect", "isFrood"));
   expect(() => {mergeArgs(queryArgList1, queryArgList2)}).toThrow();
 });

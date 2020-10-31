@@ -43,28 +43,28 @@ test("FilterGroup should render", () => {
 
   expect(filterGroup.render()).toStrictEqual({
     string: "\n(\neq(description, $beansDescription)\n)",
-    values: {
-      greenBeans: greenBeansFilter.filterArg
-    },
+    values: [
+      greenBeansFilter.filterArg,
+    ],
   });
 
   filterGroup.addFilter(asparagusFilter);
 
   expect(filterGroup.render()).toStrictEqual({
     string: "\n(\neq(description, $beansDescription)\nAND\neq(description, $asparagusDescription)\n)",
-    values: {
-      greenBeans: greenBeansFilter.filterArg,
-      asparagus: asparagusFilter.filterArg,
-    },
+    values: [
+      greenBeansFilter.filterArg,
+      asparagusFilter.filterArg,
+    ],
   });
 
   filterGroup.negate();
   filterGroup.setOperator("OR");
   expect(filterGroup.render()).toStrictEqual({
     string: "\nNOT (\neq(description, $beansDescription)\nOR\neq(description, $asparagusDescription)\n)",
-    values: {
-      greenBeans: greenBeansFilter.filterArg,
-      asparagus: asparagusFilter.filterArg,
-    },
+    values: [
+      greenBeansFilter.filterArg,
+      asparagusFilter.filterArg,
+    ],
   });
 });
