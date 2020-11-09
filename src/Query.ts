@@ -2,6 +2,7 @@ import { Node } from "./Node";
 import { Txn } from "dgraph-js";
 import { QueryArg } from "./QueryArg";
 import { RenderedQueryComponent, renderFunc, KeyedList, mergeArgs } from "./util";
+import remove from "lodash/remove";
 
 export type Condition = {
   field?: string;
@@ -18,15 +19,43 @@ export type QueryBlock = {
   }[],
 }
 
+export type Directive = {
+  string: string;
+  value: string;
+}
+
 /**
  * Queries dgraph.
  */
 export class Query extends Node {
-  directives: string[];
+  directives: Directive[] = [];
 
   condition: Condition | null = null;
 
   queryBlocks: QueryBlock[] = [];
+
+  toggleDirective(directive: string, value: string = null) {
+    if (this.directives.some(object => object.string === directive)){
+      remove(this.directives, remove => remove.string === directive);
+    }
+    else {
+      this.directives.push({string: directive, value: value});
+    }
+    return this;
+  }
+
+  cascade() {
+    return this.toggleDirective('cascade');
+  }
+
+  normalize() {
+    return this.toggleDirective('normalize');
+  }
+
+  recursive(depth: number = 5, loop: boolean = false) {
+    return this.toggleDirective('recursive', `depth:${depth}, loop:${loop}`);
+  }
+
 
   setCondition(condition: Condition) {
     this.condition = condition;
@@ -139,6 +168,30 @@ export class Query extends Node {
   }
 
   /**
+   * Render the query directives.
+   *
+   * @internal
+   *
+   * @returns {RenderedQueryComponent}
+   *   If the query does not have a directive, the rendered query component is
+   *   empty.
+   */
+  renderDirectives() {
+    let directives: string = '';
+
+    this.directives.forEach( directive => {
+      if (directive.value) {
+        directives += ` @${ directive.string }(${ directive.value })`
+      }
+      else {
+        directives += ` @${ directive.string }`
+      }
+    });
+
+    return directives;
+  }
+
+  /**
    * Renders the query.
    *
    * @internal
@@ -159,6 +212,8 @@ export class Query extends Node {
     if (pager) {
       result.values = mergeArgs(result.values, pager.values);
     }
+
+    const directives = this.renderDirectives();
 
     const valueDefs: string[] = result.values.map((item) => {
       const supportedTypes = [
@@ -189,6 +244,9 @@ export class Query extends Node {
 
     resultString += pager ? `, ${pager.string}` : "";
     resultString += ")";
+
+    resultString += `${directives}`;
+
     result.string = `${resultString}${result.string}\n}`
 
     return result;
