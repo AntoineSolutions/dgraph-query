@@ -93,11 +93,22 @@ export class Query extends Node {
       const condition = query.renderCondition();
       result.values = mergeArgs(result.values, condition.values);
 
-      const sorts = query.sorts.length ? " " + query.renderSorts() : "";
+      const append: string[] = [];
+
+      if (query.sorts.length) {
+        append.push(query.renderSorts());
+      }
+      if (query.pager) {
+        const pager = query.pager.render();
+        append.push(pager.string);
+        result.values = mergeArgs(result.values, pager.values);
+      }
+
+      const appendString = append.length ? `, ${append.join(", ")}` : "";
 
       const rendered = query.renderInner(true);
       result.values = mergeArgs(result.values, rendered.values);
-      result.string += `${asVar ? 'var' : `${query.id}`} (${condition.string}${sorts})${rendered.string}\n\n`;
+      result.string += `${asVar ? 'var' : `${query.id}`} (${condition.string}${appendString})${rendered.string}\n\n`;
     }
 
     return result;
@@ -176,8 +187,8 @@ export class Query extends Node {
     resultString += `${this.id} (${condition.string}`;
     resultString += this.sorts.length ? `, ${this.renderSorts()}` : "";
 
-    resultString += ")";
     resultString += pager ? `, ${pager.string}` : "";
+    resultString += ")";
     result.string = `${resultString}${result.string}\n}`
 
     return result;

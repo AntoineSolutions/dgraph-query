@@ -160,6 +160,7 @@ export class Node {
    */
   renderInner(asBlock: boolean = false): RenderedQueryComponent {
     let values: QueryArg[] = [];
+    const append: string[] = [];
 
     // Render fields.
     // @todo Allow fields to be aliased.
@@ -185,13 +186,14 @@ export class Node {
     if (asBlock && this.pager) {
       pager = this.pager.render();
       values = mergeArgs(values, pager.values);
+      append.push(pager.string);
     }
 
-    const sorts = asBlock ? this.renderSorts() : "";
+    if (asBlock && this.sorts.length) {
+      append.push(this.renderSorts());
+    }
 
-    let resultString = "";
-    resultString = sorts ? `${resultString}, ${sorts}` : resultString;
-    resultString = pager ? `${resultString}, ${pager}` : resultString;
+    let resultString = append.join(", ");
     resultString = filters ? ` @filter${filters.string}${resultString ? `, ${resultString}` : ""}` : "";
     resultString = `${resultString} {${fields}${edges}\n}`;
 
