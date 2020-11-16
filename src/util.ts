@@ -59,25 +59,29 @@ export function predicateIsValid(predicate: string) {
  *   without error.
  */
 export function mergeArgs(values1: QueryArg[], values2: QueryArg[]): QueryArg[] {
-  const result = [...values1];
-
   // If the first list of values is empty, return the second list of values.
-  if (!result.length) {
-    return [...values2];
+  if (!values1.length) {
+    return values2;
   }
 
-  for (const value2 of values2) {
-    for (const value1 of values1) {
-      if (value1.name === value2.name && value1 !== value2) {
-        // Can't have multiple args with the same name.
-        throw new Error(`Arg ${value2.name} conflicts with arg ${value1.name}`);
-      }
-      if (!result.includes(value2)) {
-        // If the arg isn't already included, include it.
-        result.push(value2);
-      }
+  const result = [...values1, ...values2];
+
+  // Takes the array and removes duplicate objects based on values and also
+  // checks for conflicts, which if found will throw an error.
+  return result.reduce((acc: QueryArg[], current: QueryArg) => {
+    const conflict = acc.find(item => item.name === current.name && (item.value !== current.value || item.type !== current.type));
+    if (conflict) {
+      // Can't have multiple args with the same name and different values.
+      throw new Error(`Cannot reuse query arg with name: "${current.name}" with different type or value.`);
     }
-  }
-
-  return result;
+    // Find index of item that matches current to replace with new query arg.
+    const matchedIndex = acc.findIndex(item => item.compare(current));
+    if (matchedIndex  === -1) {
+      return acc.concat([new QueryArg(current.type, current.value, current.name)]);
+    } else {
+      // Replace the matching element with a new query arg to replace them.
+      acc.splice(matchedIndex, 1, new QueryArg(current.type, current.value, current.name));
+      return acc;
+    }
+  }, []);
 }

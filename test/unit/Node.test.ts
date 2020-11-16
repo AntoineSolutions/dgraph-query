@@ -1,4 +1,4 @@
-import { Node } from "../../src";
+import { Node, QueryArg } from "../../src";
 
 test("Node should create an id", () => {
   expect(new Node().id).toBeTruthy();
@@ -36,8 +36,11 @@ test("Node should render", () => {
     render: () => {
       return {
         string: "keep out you bugs",
-        values: ["insects", "spiders"]
-      }
+        values: [
+          new QueryArg("string", "insects", "insects"),
+          new QueryArg("string", "spiders", "spiders")
+        ]
+      };
     }
   }
   const node = new Node("tastyVeggies")
@@ -48,6 +51,9 @@ test("Node should render", () => {
 
   expect(node.render()).toStrictEqual({
     string: "tastyVeggies {\nbugs @filter\n(\nkeep out you bugs\n) {\nuid\n}\n}",
-    values: ["insects", "spiders"],
+    values: [
+            new QueryArg("string", "insects", "insects"),
+            new QueryArg("string", "spiders", "spiders")
+          ],
   });
 });
