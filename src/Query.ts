@@ -208,7 +208,7 @@ export class Query extends Node {
         normal[`$${arg.name}`] = arg.value.toISOString(true);
       }
       else {
-        normal[`$${arg.name}`] = arg.value;
+        normal[`$${arg.name}`] = "" + arg.value;
       }
     });
 
