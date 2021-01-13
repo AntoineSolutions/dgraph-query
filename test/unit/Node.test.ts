@@ -56,4 +56,17 @@ test("Node should render", () => {
             new QueryArg("string", "spiders", "spiders")
           ],
   });
+
+  const nodeNoFields = new Node("noFieldsHere")
+    .addEdge(new Node("noFields")
+      .setFilters(noBugsFilter)
+    );
+
+  expect(nodeNoFields.render()).toStrictEqual({
+    string: "noFieldsHere {\nnoFields @filter\n(\nkeep out you bugs\n)\n}",
+    values: [
+      new QueryArg("string", "insects", "insects"),
+      new QueryArg("string", "spiders", "spiders")
+    ],
+  });
 });

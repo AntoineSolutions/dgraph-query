@@ -1,5 +1,5 @@
-import { Query, QueryArg, FilterGroup, Filter, Sort } from "../../src";
-import moment from "moment";
+import { Query, QueryArg, FilterGroup, Filter } from "../../src";
+import { DateTime } from "luxon";
 
 test("Query should set a condition and all setters should chain.", () => {
   const query = new Query();
@@ -41,7 +41,7 @@ test("Values should be normalized", () => {
   expect(
     query.normalizeArgs([new QueryArg("int", 4000, "kcal")])
   ).toStrictEqual({
-    $kcal: 4000
+    $kcal: "4000"
   });
 
   // Normalize a float.
@@ -50,7 +50,7 @@ test("Values should be normalized", () => {
       [new QueryArg("int", 1.4, "teraCalories")]
     )
   ).toStrictEqual({
-    $teraCalories: 1.4
+    $teraCalories: "1.4"
   });
 
   // Normalize a date.
@@ -58,7 +58,7 @@ test("Values should be normalized", () => {
     query.normalizeArgs(
       [new QueryArg(
         "dateTime",
-        moment("1993-04-28T00:00:00+00:00"),
+        DateTime.fromISO("1993-04-28T00:00:00+00:00"),
         "yourBirthday"
       )]
     )
@@ -70,7 +70,7 @@ test("Values should be normalized", () => {
   expect(
     query.normalizeArgs([new QueryArg("bool", true, "allowed")])
   ).toStrictEqual({
-    $allowed: true
+    $allowed: "true"
   });
 });
 

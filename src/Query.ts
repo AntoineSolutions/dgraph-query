@@ -263,7 +263,7 @@ export class Query extends Node {
     const normal: KeyedList<string | number | boolean> = {}
     queryArgs.forEach((arg) => {
       if (arg.type === "dateTime") {
-        normal[`$${arg.name}`] = arg.value.toISOString(true);
+        normal[`$${arg.name}`] = arg.value.toString();
       }
       else {
         normal[`$${arg.name}`] = "" + arg.value;
