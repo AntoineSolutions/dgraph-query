@@ -1,5 +1,5 @@
 import { QueryArg } from "../../src/QueryArg";
-import moment, { isMoment } from "moment";
+import { DateTime } from "luxon";
 import { mergeArgs } from "../../src/util";
 
 test("QueryArgs should construct.", () => {
@@ -11,13 +11,13 @@ test("QueryArgs should construct.", () => {
 
 test("QueryArgs should construct with date objects.", () => {
   const timeString = "2008-01-01T01:00:00+00:00"
-  // The query args should construct from a moment object and store the value
-  // as a moment object.
-  expect(isMoment(new QueryArg("dateTime", moment(timeString), "birthday").value)).toBeTruthy();
+  // The query args should construct from a luxon object and store the value
+  // as a luxon object.
+  expect(DateTime.isDateTime(new QueryArg("dateTime", DateTime.fromISO(timeString), "birthday").value)).toBeTruthy();
 
   // The query args should construct from a Date object and store the value as a
-  // moment object.
-  expect(isMoment(new QueryArg("dateTime", new Date(timeString), "birthday").value)).toBeTruthy();
+  // luxon object.
+  expect(DateTime.isDateTime(new QueryArg("dateTime", new Date(timeString), "birthday").value)).toBeTruthy();
 
   // Only valid date objects should be accepted as values for dateTime query
   // args.

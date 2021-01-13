@@ -1,5 +1,5 @@
 import { Query, QueryArg, FilterGroup, Filter } from "../../src";
-import moment from "moment";
+import { DateTime } from "luxon";
 
 test("Query should set a condition and all setters should chain.", () => {
   const query = new Query();
@@ -41,7 +41,7 @@ test("Values should be normalized", () => {
   expect(
     query.normalizeArgs([new QueryArg("int", 4000, "kcal")])
   ).toStrictEqual({
-    $kcal: 4000
+    $kcal: "4000"
   });
 
   // Normalize a float.
@@ -50,7 +50,7 @@ test("Values should be normalized", () => {
       [new QueryArg("int", 1.4, "teraCalories")]
     )
   ).toStrictEqual({
-    $teraCalories: 1.4
+    $teraCalories: "1.4"
   });
 
   // Normalize a date.
@@ -58,7 +58,7 @@ test("Values should be normalized", () => {
     query.normalizeArgs(
       [new QueryArg(
         "dateTime",
-        moment("1993-04-28T00:00:00+00:00"),
+        DateTime.fromISO("1993-04-28T00:00:00+00:00"),
         "yourBirthday"
       )]
     )
@@ -70,7 +70,7 @@ test("Values should be normalized", () => {
   expect(
     query.normalizeArgs([new QueryArg("bool", true, "allowed")])
   ).toStrictEqual({
-    $allowed: true
+    $allowed: "true"
   });
 });
 
@@ -164,4 +164,52 @@ test("Test execute", () => {
     `query greenBeans($Default: string) {\ngreenBeans (func: eq(defaultField, $Default)) {\nuid\n}\n}`,
     { $Default: "Some Value" }
   ]);
+});
+
+test("Query directive should render", () => {
+  const query = new Query("greenBeans");
+  query.addFields(["uid"]);
+
+  const condition = {
+    field: "color",
+    func: "eq",
+    value: new QueryArg("string", "green", "color")
+  };
+  query.setCondition(condition);
+
+
+  // Should render without adding any directives.
+  expect(query.render()).toStrictEqual({
+    string: `query greenBeans($color: string) {\ngreenBeans (func: eq(color, $color)) {\nuid\n}\n}`,
+    values: [condition.value]
+  });
+
+  // Add the cascade directive.
+  query.cascade();
+  expect(query.render()).toStrictEqual({
+    string: `query greenBeans($color: string) {\ngreenBeans (func: eq(color, $color)) @cascade {\nuid\n}\n}`,
+    values: [condition.value]
+  });
+
+  // Removing a directive by calling it again.
+  query.cascade();
+  expect(query.render()).toStrictEqual({
+    string: `query greenBeans($color: string) {\ngreenBeans (func: eq(color, $color)) {\nuid\n}\n}`,
+    values: [condition.value]
+  });
+
+  // Add the normalize directive.
+  query.normalize();
+  expect(query.render()).toStrictEqual({
+    string: `query greenBeans($color: string) {\ngreenBeans (func: eq(color, $color)) @normalize {\nuid\n}\n}`,
+    values: [condition.value]
+  });
+
+  // Add the recursive directive.
+  query.recursive(5,false);
+  expect(query.render()).toStrictEqual({
+    string: `query greenBeans($color: string) {\ngreenBeans (func: eq(color, $color)) @normalize @recursive(depth:5, loop:false) {\nuid\n}\n}`,
+    values: [condition.value]
+  });
+
 });
