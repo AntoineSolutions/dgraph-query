@@ -19,13 +19,13 @@ export type KeyedList<T> = {[key: string]: T}
  * @param {string} field
  *   The field. For some funcs, like "uid" or "type", this field is optional.
  */
-export function renderFunc(func: string, value: QueryArg | string, field?: string) {
+export function renderFunc(func: string, value?: QueryArg | string, field?: string) {
   const valueName = typeof value === "string" ? value : `$${value.name}`
   switch (func) {
     case "uid":
-      return `uid(${valueName})`;
     case "type":
-      return `type(${valueName})`;
+    case "has":
+      return `${func}(${valueName})`;
     default:
       return `${func}(${field}, ${valueName})`;
   }

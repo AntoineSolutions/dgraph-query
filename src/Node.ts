@@ -195,8 +195,8 @@ export class Node {
 
     let resultString = append.join(", ");
     resultString = filters ? ` @filter${filters.string}${resultString ? `, ${resultString}` : ""}` : "";
-    resultString = `${resultString} {${fields}${edges}\n}`;
-
+    // If fields or edges add those to the resultString.
+    (fields||edges) && (resultString += ` {${fields}${edges}\n}`);
     return {
       string: resultString,
       values
