@@ -1,6 +1,6 @@
 {
   "name": "dgraph-query",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Creates reusable and mutable query objects for dgraph.",
   "main": "dist/index.js",
   "scripts": {
